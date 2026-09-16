@@ -16,7 +16,7 @@ On te donne le nom (ou symbole boursier) d'une société cotée en bourse. Tu do
 3. Rédiger une analyse en français sur 6 axes : Finances, Historique, Macroéconomie, Technique, Perspectives, Géopolitique — en te basant sur de vraies recherches (contexte géopolitique actuel, positionnement produit, concurrence, chaîne d'approvisionnement, réglementation).
 4. Donner une estimation chiffrée sur 10 de la qualité de l'investissement à horizon 1 an et à horizon 10 ans, avec une justification courte. Précise toujours qu'il s'agit d'une estimation, pas d'un conseil financier.
 
-Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ni après, sans balises markdown, respectant EXACTEMENT ce schéma :
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ni après, sans balises markdown, sans aucune balise de citation ou de référence (jamais de <cite>, d'index de source ou de crochets de note), respectant EXACTEMENT ce schéma :
 {
   "name": "Nom complet de la société",
   "ticker": "BOURSE · SYMBOLE",
@@ -58,6 +58,24 @@ function extractJson(text) {
     console.error("JSON parse error", parseErr.message, "raw text:", text.slice(0, 4000));
     throw new Error("Réponse IA incomplète ou mal formée, merci de réessayer");
   }
+}
+
+function stripCitationTags(value) {
+  if (typeof value === "string") {
+    return value
+      .replace(/<\/?cite[^>]*>/gi, "")
+      .replace(/\[\d+(-\d+)?(,\s*\d+(-\d+)?)*\]/g, "")
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/ (?=[.,;:!?])/g, "")
+      .trim();
+  }
+  if (Array.isArray(value)) return value.map(stripCitationTags);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const k in value) out[k] = stripCitationTags(value[k]);
+    return out;
+  }
+  return value;
 }
 
 function validatePayload(data) {
@@ -159,7 +177,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const data = validatePayload(extractJson(textBlocks));
+    const data = validatePayload(stripCitationTags(extractJson(textBlocks)));
     res.status(200).json(data);
   } catch (err) {
     console.error("analyze handler error", err);
