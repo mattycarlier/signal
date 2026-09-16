@@ -52,7 +52,12 @@ function extractJson(text) {
   if (start === -1 || end === -1 || end <= start) {
     throw new Error("Réponse IA sans JSON exploitable");
   }
-  return JSON.parse(candidate.slice(start, end + 1));
+  try {
+    return JSON.parse(candidate.slice(start, end + 1));
+  } catch (parseErr) {
+    console.error("JSON parse error", parseErr.message, "raw text:", text.slice(0, 4000));
+    throw new Error("Réponse IA incomplète ou mal formée, merci de réessayer");
+  }
 }
 
 function validatePayload(data) {
@@ -117,7 +122,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 8000,
+        max_tokens: 16000,
         system: SYSTEM_PROMPT,
         tools: [
           {
@@ -145,6 +150,12 @@ module.exports = async function handler(req, res) {
 
     if (!textBlocks.trim()) {
       res.status(502).json({ error: "Réponse IA vide" });
+      return;
+    }
+
+    if (payload.stop_reason === "max_tokens") {
+      console.error("Anthropic response truncated at max_tokens for company:", name);
+      res.status(502).json({ error: "L'analyse était trop longue et a été coupée, merci de réessayer" });
       return;
     }
 
