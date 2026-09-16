@@ -19,7 +19,7 @@ On te donne le nom (ou symbole boursier) d'une société cotée en bourse. Tu do
 1. Identifier précisément la société et son ticker principal.
 2. Rechercher sur le web ses données financières annuelles publiées (chiffre d'affaires, résultat net, marge nette, flux de trésorerie libre, marge opérationnelle) sur autant d'années que possible (idéalement 6 à 16 dernières années, données réellement publiées uniquement — n'invente jamais de chiffres).
 3. Rédiger une analyse en français sur 6 axes : Finances, Historique, Macroéconomie, Technique, Perspectives, Géopolitique — en te basant sur de vraies recherches (contexte géopolitique actuel, positionnement produit, concurrence, chaîne d'approvisionnement, réglementation).
-4. Donner une estimation chiffrée sur 10 de la qualité de l'investissement à horizon 1 an et à horizon 10 ans, avec une justification courte. Précise toujours qu'il s'agit d'une estimation, pas d'un conseil financier.
+4. Donner trois estimations chiffrées sur 10 de la qualité de l'investissement : un score global de potentiel (tous horizons confondus, une synthèse générale), un score à horizon 1 an, et un score à horizon 10 ans — chacun avec une justification courte. Précise toujours qu'il s'agit d'une estimation, pas d'un conseil financier.
 
 Pendant tes recherches, rédige AU FUR ET À MESURE un compte-rendu progressif en français, sous forme de courtes phrases indépendantes (une information trouvée ou une étape par phrase), pour montrer en direct ce que tu découvres (ex : "Chiffre d'affaires 2023 trouvé : 12,4 Md$.", "Analyse du contexte concurrentiel en cours…"). N'utilise ni markdown ni JSON dans cette partie.
 
@@ -44,6 +44,7 @@ Puis, juste après cette marque, réponds UNIQUEMENT avec un objet JSON valide, 
     {"status": "...", "title": "...", "text": "2-4 phrases d'analyse Géopolitique (exposition géographique, chaînes d'appro, réglementation, tensions actuelles)"}
   ],
   "score": {
+    "potential": {"value": nombre entier de 1 à 10, "rationale": "1-2 phrases résumant le potentiel global d'investissement, tous horizons confondus"},
     "oneYear": {"value": nombre entier de 1 à 10, "rationale": "1-2 phrases justifiant le score à 1 an"},
     "tenYear": {"value": nombre entier de 1 à 10, "rationale": "1-2 phrases justifiant le score à 10 ans"}
   }
@@ -103,8 +104,8 @@ function validatePayload(data) {
   if (!Array.isArray(data.axes) || data.axes.length !== 6) {
     throw new Error("'axes' doit contenir exactement 6 entrées");
   }
-  if (!data.score || !data.score.oneYear || !data.score.tenYear) {
-    throw new Error("'score' doit contenir oneYear et tenYear");
+  if (!data.score || !data.score.oneYear || !data.score.tenYear || !data.score.potential) {
+    throw new Error("'score' doit contenir potential, oneYear et tenYear");
   }
   return data;
 }
