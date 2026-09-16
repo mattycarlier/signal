@@ -7,7 +7,7 @@
 // -> 4xx/5xx { error: string }
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-4-5";
+const MODEL = "claude-sonnet-5";
 
 const SYSTEM_PROMPT = `Tu es un analyste financier qui prépare des fiches d'entreprise pour un prototype pédagogique nommé InvestScope.
 On te donne le nom (ou symbole boursier) d'une société cotée en bourse. Tu dois :
@@ -117,13 +117,13 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 8000,
+        max_tokens: 4000,
         system: SYSTEM_PROMPT,
         tools: [
           {
             type: "web_search_20250305",
             name: "web_search",
-            max_uses: 8,
+            max_uses: 4,
           },
         ],
         messages: [{ role: "user", content: userMessage }],
